@@ -769,6 +769,7 @@ impl<R: Read + Unpin> EntryFields<R> {
             OpenOptions::new()
                 .write(true)
                 .create_new(true)
+                .custom_flags(libc::O_DIRECT)
                 .open(dst)
                 .await
         }
@@ -790,7 +791,7 @@ impl<R: Read + Unpin> EntryFields<R> {
             }?;
 
             let size = usize::try_from(self.size).unwrap_or(usize::MAX);
-            let capacity = cmp::min(size, 128 * 1024);
+            let capacity = cmp::min(size, 4096);
             let mut writer = io::BufWriter::with_capacity(capacity, &mut f);
             for io in self.data.drain(..) {
                 match io {
